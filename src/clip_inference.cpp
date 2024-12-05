@@ -82,31 +82,12 @@ public:
 
         return embedding;
     }
-
-private:
-    // Placeholder for text preprocessing
-    std::vector<float> preprocessText(const std::string& text) {
-        // IMPORTANT: Implement your specific text preprocessing 
-        // This should match the preprocessing used during CLIP model training
-        // Typically involves:
-        // 1. Tokenization
-        // 2. Converting tokens to input tensor
-        // 3. Applying any necessary normalization
-        
-        // Example (VERY SIMPLIFIED, replace with actual preprocessing):
-        std::vector<float> processed_tensor(512, 0.0f); // Placeholder
-        return processed_tensor;
-    }
-
-    // Allocator for ONNX Runtime
-    Ort::Allocator allocator{session, Ort::MemoryInfo::CreateCpu(
-        OrtArenaAllocator, OrtMemTypeDefault)};
 };
 
 int main() {
     try {
         // Path to your ONNX model
-        std::string model_path = "path/to/your/clip_model.onnx";
+        std::string model_path = "/home/teknique/Documents/clipx/CLIP/onnx_models/clip_text_vitb32_224x224.onnx";
         
         // Create inference instance
         CLIPInference clip_inference(model_path);
