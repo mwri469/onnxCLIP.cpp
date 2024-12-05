@@ -10,6 +10,7 @@
 #include <sstream>
 #include <iostream>
 #include <algorithm>
+#include <iterator>
 
 class CLIPTokenizer {
 public:
@@ -31,7 +32,7 @@ private:
     std::unordered_map<int, char> byte_decoder;
     std::unordered_map<int, std::string> decoder;
     std::unordered_map<std::string, int> encoder;
-    std::unordered_map<std::pair<std::string, std::string>, int, PairHash> bpe_ranks;
+    std::unordered_map<std::string, std::unordered_map<std::string, int>> bpe_ranks;
     
     // Cache for BPE results
     std::unordered_map<std::string, std::string> cache;
@@ -45,6 +46,7 @@ private:
     std::string bpe(const std::string& token);
     std::string basic_clean(const std::string& text);
     std::string whitespace_clean(const std::string& text);
+    std::vector<std::pair<std::string, std::string>> open_bpe(std::string& path);
 
     // Hash function for pair hashing
     struct PairHash {

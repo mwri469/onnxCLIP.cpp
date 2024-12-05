@@ -1,27 +1,28 @@
-cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
-project(CLIP_inference)
+cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 
-# Set paths
-set(LIBTORCH_DIR "${CMAKE_SOURCE_DIR}/libtorch")
-set(ONNXRUNTIME_DIR "${CMAKE_SOURCE_DIR}/onnxruntime-linux-x64-1.20.1")
+set(project_name print_vocab)
+project(${project_name})
 
-# Find LibTorch
-list(APPEND CMAKE_PREFIX_PATH "${LIBTORCH_DIR}")
-find_package(Torch REQUIRED)
+# Define path to LibTorch Instillation
+# set(CMAKE_PREFIX_PATH /home/teknique/torchinstall/libtorch)
 
-# Include ONNX Runtime directories
-include_directories(${ONNXRUNTIME_DIR}/include)
-link_directories(${ONNXRUNTIME_DIR}/lib)
+# Find torch library and define all required files
+# find_package(Torch REQUIRED)
+# find_library(Torchvision_LIBRARIES torchvision REQUIRED PATHS /usr/local/lib)
+# set(CMAKE_CXX_FLAGS, "${CMAKE_CXX_FLAGS}, ${TORCH_CXX_FLAGS}")
 
-# Add your executable
-add_executable(CLIP_inference clip_inference.cpp)
+# Include directories for Torchvision
+# include_directories(/usr/local/include)
 
-# Link libraries
-target_link_libraries(CLIP_inference 
-    ${TORCH_LIBRARIES}
-    onnxruntime
-)
+add_library(${project_name}-lib
+        src/inference/tokenizer.cpp
+        src/inference/tokeniser.h)
 
-# Set C++ standard
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# Executable to add that will be compiled and run
+add_executable(print_vocab 
+                src/main.cpp
+                src/inference/tokenizer.cpp)
+
+# Link torch libs to the executable
+# target_link_libraries(print_vocab "${TORCH_LIBRARIES}" "${Torchvision_LIBRARIES}")
+
