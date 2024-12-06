@@ -8,10 +8,21 @@ CLIPTokenizer::CLIPTokenizer(const std::string& bpe_path) {
                      std::regex::icase);
 
     // Byte encoding
-    auto byte_encoder = bytes_to_unicode();
+    std::unordered_map<int, std::string> byte_encoder = bytes_to_unicode();
     byte_decoder = {};
+
+    // Converter for UTF-8 to UTF-32
+    std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> utf8_to_utf32;
+    
     for (const auto& [k, v] : byte_encoder) {
-        byte_decoder[static_cast<int>(v)] = k;
+        // Convert string to UTF-32
+        std::u32string utf32_string = utf8_to_utf32.from_bytes(v);
+
+        // Ensure the string is not empty and extract the first code point
+        if (!utf32_string.empty()) {
+            int unicode_code_point = static_cast<int>(utf32_string[0]);
+            byte_decoder[unicode_code_point] = k;
+        }
     }
 
     // Load BPE merges (you'll need to implement this part)
