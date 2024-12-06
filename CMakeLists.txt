@@ -13,6 +13,8 @@ project(${project_name})
 
 # Include directories for Torchvision
 # include_directories(/usr/local/include)
+# Include directories for headers
+include_directories(src/inference)
 
 add_library(${project_name}-lib
         src/inference/tokenizer.cpp
