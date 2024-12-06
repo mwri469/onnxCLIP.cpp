@@ -207,30 +207,66 @@ std::string CLIPTokenizer::bpe(const std::string& token) {
     word.push_back(token.substr(token.length() - 1) + "</w>");
 
     // Get initial pairs
-    auto pairs = get_pairs(word);
+    std::set<std::pair<std::string, std::string>> pairs = get_pairs(word);
     
     if (pairs.empty()) {
         return token + "</w>";
     }
 
-    // BPE merge process (simplified)
     while (true) {
-        // Find the pair with the lowest rank
-        auto best_pair = std::min_element(pairs.begin(), pairs.end(), 
-            [this](const auto& a, const auto& b) {
-                auto rank_a = bpe_ranks.find(a) != bpe_ranks.end() ? 
-                    bpe_ranks[a] : std::numeric_limits<int>::max();
-                auto rank_b = bpe_ranks.find(b) != bpe_ranks.end() ? 
-                    bpe_ranks[b] : std::numeric_limits<int>::max();
-                return rank_a < rank_b;
-            });
+        // Set min to maximum possible intiger
+        int min = 2^31 - 1;
+        std::pair<std::string, std::string> best_pair = {"", ""};
+        
+        // Iterate through set and get minimum value
+        for (auto it = pairs.begin(); it != pairs.end(); ++it) {
+            // Check if element exists
+            if (check_keys(bpe_ranks, it->first, it->second)) {
+                if (bpe_ranks[it->first][it->second] < min) {
+                    // Update min value and best pair if better than existing
+                    min = bpe_ranks[it->first][it->second];
+                    best_pair.first = it->first;
+                    best_pair.second = it->second;
+                }
+            } else {
+                // pair does not exist
+                std::cout << "Pair : " <<it->first << ", " << it->second << " does not exist in bpe_ranks" << std::endl;
+            }
+        }
 
-        if (bpe_ranks.find(*best_pair) == bpe_ranks.end()) {
+        std::vector<std::string> new_word;
+        size_t i = 0;
+        while (i < word.size()) {
+            auto it = std::find(word.begin() + i, word.end(), best_pair.first);
+            if (it == word.end()) {
+                // Add the remaining part of the word
+                new_word.insert(new_word.end(), word.begin() + i, word.end());
+                break;
+            }
+
+            size_t j = std::distance(word.begin(), it);
+            new_word.insert(new_word.end(), word.begin() + i, word.begin() + j);
+
+            // Check if the bigram is found
+            if (j < word.size() - 1 && word[j] == best_pair.first && word[j + 1] == best_pair.second) {
+                new_word.push_back(best_pair.first + best_pair.second);
+                i = j + 2; // Skip the merged pair
+            } else {
+                new_word.push_back(word[j]);
+                i = j + 1;
+            }
+        }
+
+        word = new_word;
+
+        // Break if only one symbol remains
+        if (word.size() == 1) {
             break;
         }
 
-        // Merge the best pair
-        // (Note: Full implementation would be more complex)
+        // Else, update pairs
+        pairs = get_pairs(word);
+
     }
 
     // Convert word back to string
@@ -245,7 +281,7 @@ std::string CLIPTokenizer::bpe(const std::string& token) {
     return result;
 }
 
-std::vector<int> CLIPTokeniser::encode(const std::string& text) {
+std::vector<int> CLIPTokenizer::encode(const std::string& text) {
     std::vector<int> bpe_tokens;
     
     // Clean and lowercase the text
@@ -284,7 +320,7 @@ std::vector<int> CLIPTokeniser::encode(const std::string& text) {
     return bpe_tokens;
 }
 
-std::string CLIPTokeniser::decode(const std::vector<int>& tokens) {
+std::string CLIPTokenizer::decode(const std::vector<int>& tokens) {
     // Convert tokens back to text
     std::string text;
     for (int token : tokens) {
@@ -299,7 +335,7 @@ std::string CLIPTokeniser::decode(const std::vector<int>& tokens) {
     return text;
 }
 
-std::vector<int> CLIPTokeniser::encode_text(
+std::vector<int> CLIPTokenizer::encode_text(
     const std::string& text, 
     int context_length, 
     bool truncate
