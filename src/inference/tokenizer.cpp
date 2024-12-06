@@ -2,6 +2,12 @@
 #include <codecvt>
 #include <locale>
 
+/*
+TODO:
+-Fix byte_decoder, wstring is such a headache
+-**bpe() running infinite loop through (t,o) -> (h,o) -> (o,t)**
+*/
+
 CLIPTokenizer::CLIPTokenizer(const std::string& bpe_path) {
     // Default pattern matching tokens
     pat = std::regex(R"(<\|startoftext\|>|<\|endoftext\|>|'s|'t|'re|'ve|'m|'ll|'d|[\p{L}]+|[\p{N}]|[^\s\p{L}\p{N}]+)", 
@@ -9,22 +15,22 @@ CLIPTokenizer::CLIPTokenizer(const std::string& bpe_path) {
 
     // Byte encoding
     std::unordered_map<int, std::string> byte_encoder = bytes_to_unicode();
+    /*
     byte_decoder = {};
 
     // Converter for UTF-8 to UTF-32
     std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> utf8_to_utf32;
-    
+
     for (const auto& [k, v] : byte_encoder) {
-        // Convert string to UTF-32
-        std::u32string utf32_string = utf8_to_utf32.from_bytes(v);
+        // Convert string to wide string
+        std::wstring wide_string = bytes_to_wide(v);
 
         // Ensure the string is not empty and extract the first code point
-        if (!utf32_string.empty()) {
-            int unicode_code_point = static_cast<int>(utf32_string[0]);
+        if (!wide_string.empty()) {
+            int unicode_code_point = static_cast<int>(wide_string[0]);
             byte_decoder[unicode_code_point] = k;
         }
-    }
-
+    } */
     // Load BPE merges (you'll need to implement this part)
     // For now, this is a placeholder
     std::vector<std::pair<std::string, std::string>> merges;
@@ -56,7 +62,20 @@ CLIPTokenizer::CLIPTokenizer(const std::string& bpe_path) {
     cache["<|startoftext|>"] = "<|startoftext|>";
     cache["<|endoftext|>"] = "<|endoftext|>";
 }
-
+/*
+std::wstring CLIPTokenizer::bytes_to_wide(const std::string& input) {
+    // Convert a UTF-8 string to a wide string
+    try {
+        std::wstring wide_string(input.size(), L'\0');
+        std::mbstowcs(&wide_string[0], input.c_str(), input.size());
+        return wide_string;
+    } catch (const std::exception& e) {
+        std::cerr << "Error in bytes_to_wide with input: " << input << "\n";
+        std::cerr << "Exception: " << e.what() << "\n";
+        throw;
+    }
+}
+*/ 
 /* ======================================================================== *
  * Default function to open a byte-pair encoding .txt file.                 *
  *                                                                          *

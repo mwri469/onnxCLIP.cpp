@@ -14,6 +14,8 @@ int main(int argc, char* argv[]) {
     std::unordered_map<int, char> byte_decoder;
     static CLIPTokenizer tokenizer;
 
+    std::setlocale(LC_ALL, "en_US.UTF-8");
+
     if (argc != 2) {
         std::cout << "Usage: ./print_vocab <path/to/vocab.txt>" << std::endl;
         return 1;
@@ -45,12 +47,13 @@ int main(int argc, char* argv[]) {
 
     bpe_file.close();
 
-    // Byte encoding
-    auto byte_encoder = tokenizer.bytes_to_unicode();
-    byte_decoder = {};
-    for (const auto& [k, v] : byte_encoder) {
-        byte_decoder[static_cast<int>(v)] = k;
+    std::string text = "a photo of clip";
+    std::vector<int> tokens = tokenizer.encode(text);
+
+    for (auto itr = tokens.begin(); itr != tokens.end(); ++itr) {
+        std::cout << *itr << " ";
     }
+    std::cout << std::endl;
 
     return 0;
 }
