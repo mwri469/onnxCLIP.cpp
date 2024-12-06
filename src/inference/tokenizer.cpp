@@ -107,7 +107,7 @@ std::unordered_map<int, std::string> CLIPTokenizer::bytes_to_unicode() {
     return byte_encoder;
 }
 
-std::set<std::pair<std::string, std::string>> CLIPTokeniser::get_pairs(const std::vector<std::string>& word) {
+std::set<std::pair<std::string, std::string>> CLIPTokenizer::get_pairs(const std::vector<std::string>& word) {
     std::set<std::pair<std::string, std::string>> pairs;
     for (size_t i = 0; i < word.size() - 1; ++i) {
         pairs.insert({word[i], word[i+1]});
@@ -115,7 +115,7 @@ std::set<std::pair<std::string, std::string>> CLIPTokeniser::get_pairs(const std
     return pairs;
 }
 
-std::string CLIPTokeniser::basic_clean(const std::string& text) {
+std::string CLIPTokenizer::basic_clean(const std::string& text) {
     // Note: Full implementation of ftfy.fix_text would require additional library
     // This is a simplified version
     std::string cleaned = text;
@@ -127,14 +127,14 @@ std::string CLIPTokeniser::basic_clean(const std::string& text) {
     return cleaned;
 }
 
-std::string CLIPTokeniser::whitespace_clean(const std::string& text) {
+std::string CLIPTokenizer::whitespace_clean(const std::string& text) {
     // Replace multiple whitespaces with a single space
     std::regex ws_regex(R"(\s+)");
     return std::regex_replace(text, ws_regex, " ");
 }
 
-std::string CLIPTokeniser::bpe(const std::string& token) {
-    // Check cache first
+std::string CLIPTokenizer::bpe(const std::string& token) {
+    // Check cache first, memoization
     auto cache_it = cache.find(token);
     if (cache_it != cache.end()) {
         return cache_it->second;
@@ -176,6 +176,7 @@ std::string CLIPTokeniser::bpe(const std::string& token) {
 
     // Convert word back to string
     std::string result = word[0];
+
     for (size_t i = 1; i < word.size(); ++i) {
         result += " " + word[i];
     }
