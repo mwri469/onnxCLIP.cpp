@@ -46,18 +46,32 @@ CLIPTokenizer::CLIPTokenizer(const std::string& bpe_path) {
     cache["<|endoftext|>"] = "<|endoftext|>";
 }
 
+/* ======================================================================== *
+ * Default function to open a byte-pair encoding .txt file.                 *
+ *                                                                          *
+ * Parameters:                                                              *
+ * -----------                                                              *
+ * path : str                                                               *
+ *      -Path to BPE.txt file                                               *
+ *                                                                          *
+ * Returns:                                                                 *
+ * --------                                                                 *
+ * merges : vector[{byte, char}]                                            *
+ *      -vector of string pairs containing the BPE encondings               *
+ * ======================================================================== */
 std::vector<std::pair<std::string, std::string>> CLIPTokenizer::open_bpe(std::string &path)
 {
+    // init merges data structure and line
+    std::vector <std::pair<std::string,std::string>> merges;
+    std::string line;
+
     // Open file and check opening was successful
     std::ifstream bpe_file(path);
     if (!bpe_file.is_open()) {
         std::cerr << "Error opening vocab file" << std::endl;
-        return 1;
+        merges.push_back({"", ""});
+        return merges;
     }
-
-    // init merges data structure and line
-    std::vector <std::pair<std::string,std::string>> merges;
-    std::string line;
 
     // Waste first line
     std::getline(bpe_file, line);
@@ -133,6 +147,51 @@ std::string CLIPTokenizer::whitespace_clean(const std::string& text) {
     return std::regex_replace(text, ws_regex, " ");
 }
 
+/* ======================================================================== *
+ * Determines if a nested map contains a combination of two keys type<str>  *
+ *                                                                          *
+ * Parameters:                                                              *
+ * -----------                                                              *
+ * mapping : map<str, map<str, int>>                                        *
+ *      -Outer-most map to search through                                   *
+ * key1 : str                                                               *
+ *      -key to use for finding outer map                                   *
+ * key2 : str                                                               *
+ *      -key to use for finding inner map                                   *
+ *                                                                          *
+ * Returns:                                                                 *
+ * --------                                                                 *
+ *  : bool                                                                  *
+ *      -True if both keys exist, else false                                *
+ * ======================================================================== */
+bool check_keys(std::unordered_map<std::string, std::unordered_map<std::string, int>> mapping, std::string key1, std::string key2) {
+    // Find first key in outer map
+    auto it_inner = mapping.find(key1);
+
+    if (it_inner != mapping.end()) {
+        // Return wether second key is in inner map  
+        return it_inner->second.find(key2) != it_inner->second.end();
+    }
+
+    // First key does not exist in outer map
+    return false;
+}
+
+/* ======================================================================== *
+ * Modification of bpe() function in OpenAI's CLIP module:                  *
+ * https://github.com/openai/CLIP/blob/main/clip/simple_tokenizer.py#L62    *
+ * Performs the byte-pair encoding to help encode some text.                *
+ *                                                                          *
+ * Parameters:                                                              *
+ * -----------                                                              *
+ * token : str                                                              *
+ *      -Tokens to convert to word                                          *
+ *                                                                          *
+ * Returns:                                                                 *
+ * --------                                                                 *
+ * word : str                                                               *
+ *      -Converted word                                                     *
+ * ======================================================================== */
 std::string CLIPTokenizer::bpe(const std::string& token) {
     // Check cache first, memoization
     auto cache_it = cache.find(token);
