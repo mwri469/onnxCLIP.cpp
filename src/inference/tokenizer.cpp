@@ -8,6 +8,11 @@ TODO:
 -**bpe() running infinite loop through (t,o) -> (h,o) -> (o,t)**
 */
 
+/* *
+ * Header function: initialise required variables and set up bpe
+ *
+ * @param[in] - bpe_path, str: path to .txt file containing bpe encodings
+ * */
 CLIPTokenizer::CLIPTokenizer(const std::string& bpe_path) {
     // Default pattern matching tokens
     pat = std::regex(R"(<\|startoftext\|>|<\|endoftext\|>|'s|'t|'re|'ve|'m|'ll|'d|[\p{L}]+|[\p{N}]|[^\s\p{L}\p{N}]+)", 
@@ -62,7 +67,8 @@ CLIPTokenizer::CLIPTokenizer(const std::string& bpe_path) {
     cache["<|startoftext|>"] = "<|startoftext|>";
     cache["<|endoftext|>"] = "<|endoftext|>";
 }
-/*
+
+/* Deprecated function that was supposed to convert to unicode
 std::wstring CLIPTokenizer::bytes_to_wide(const std::string& input) {
     // Convert a UTF-8 string to a wide string
     try {
@@ -76,19 +82,14 @@ std::wstring CLIPTokenizer::bytes_to_wide(const std::string& input) {
     }
 }
 */ 
-/* ======================================================================== *
- * Default function to open a byte-pair encoding .txt file.                 *
- *                                                                          *
- * Parameters:                                                              *
- * -----------                                                              *
- * path : str                                                               *
- *      -Path to BPE.txt file                                               *
- *                                                                          *
- * Returns:                                                                 *
- * --------                                                                 *
- * merges : vector[{byte, char}]                                            *
- *      -vector of string pairs containing the BPE encondings               *
- * ======================================================================== */
+
+/* *
+ * Default function to open a byte-pair encoding .txt file.                
+ *                                                        
+ * @param[in] - path, str: Path to BPE.txt file                                                                                                              
+ * @param[out] - merges, vector<byte, char>: vector of string pairs containing the BPE
+ *                 encondings               
+ * */
 std::vector<std::pair<std::string, std::string>> CLIPTokenizer::open_bpe(std::string &path)
 {
     // init merges data structure and line
@@ -123,9 +124,11 @@ std::vector<std::pair<std::string, std::string>> CLIPTokenizer::open_bpe(std::st
     return merges;
 }
 
-/*
-Function to convert byte string to unicode
-*/
+/* *
+ * Function to convert byte string to unicode
+ *
+ * @param[out] - byte_encoder, map<int, str>: byte value->character mapping
+ * */
 std::unordered_map<int, std::string> CLIPTokenizer::bytes_to_unicode() {
     std::unordered_map<int, std::string> byte_encoder;
     
@@ -135,6 +138,7 @@ std::unordered_map<int, std::string> CLIPTokenizer::bytes_to_unicode() {
     for (int b = 161; b <= 172; ++b) bs.push_back(b);
     for (int b = 174; b <= 255; ++b) bs.push_back(b);
 
+    // Go through 
     int n = 0;
     for (int b = 0; b < 256; ++b) {
         if (std::find(bs.begin(), bs.end(), b) == bs.end()) {
@@ -144,6 +148,7 @@ std::unordered_map<int, std::string> CLIPTokenizer::bytes_to_unicode() {
         }
     }
 
+    // Link byte as key to character representation as value in map 
     for (int b : bs) {
         byte_encoder[b] = static_cast<char>(b);
     }
@@ -151,6 +156,11 @@ std::unordered_map<int, std::string> CLIPTokenizer::bytes_to_unicode() {
     return byte_encoder;
 }
 
+/* *
+ * Create pairs map of two tokens in a word stream
+ *
+ * @param[in] - word, vector<str>:
+ * */
 std::set<std::pair<std::string, std::string>> CLIPTokenizer::get_pairs(const std::vector<std::string>& word) {
     std::set<std::pair<std::string, std::string>> pairs;
     for (size_t i = 0; i < word.size() - 1; ++i) {
@@ -177,23 +187,15 @@ std::string CLIPTokenizer::whitespace_clean(const std::string& text) {
     return std::regex_replace(text, ws_regex, " ");
 }
 
-/* ======================================================================== *
- * Determines if a nested map contains a combination of two keys type<str>  *
- *                                                                          *
- * Parameters:                                                              *
- * -----------                                                              *
- * mapping : map<str, map<str, int>>                                        *
- *      -Outer-most map to search through                                   *
- * key1 : str                                                               *
- *      -key to use for finding outer map                                   *
- * key2 : str                                                               *
- *      -key to use for finding inner map                                   *
- *                                                                          *
- * Returns:                                                                 *
- * --------                                                                 *
- *  : bool                                                                  *
- *      -True if both keys exist, else false                                *
- * ======================================================================== */
+/* *
+ * Determines if a nested map contains a combination of two keys type<str>  
+ *                                               
+ * @param[in] - mapping, map<str, map<str, int>>: Outer-most map to search 
+ *                through                                   
+ * @param[in] - key1, str: key to use for finding outer map                                   
+ * @param[in] - key2, str: key to use for finding inner map                                   
+ * @param[out] - bool: True if both keys exist, else false                                
+ * */
 bool check_keys(std::unordered_map<std::string, std::unordered_map<std::string, int>> mapping, std::string key1, std::string key2) {
     // Find first key in outer map
     auto it_inner = mapping.find(key1);
@@ -207,21 +209,15 @@ bool check_keys(std::unordered_map<std::string, std::unordered_map<std::string, 
     return false;
 }
 
-/* ======================================================================== *
- * Modification of bpe() function in OpenAI's CLIP module:                  *
- * https://github.com/openai/CLIP/blob/main/clip/simple_tokenizer.py#L62    *
- * Performs the byte-pair encoding to help encode some text.                *
- *                                                                          *
- * Parameters:                                                              *
- * -----------                                                              *
- * token : str                                                              *
- *      -Tokens to convert to word                                          *
- *                                                                          *
- * Returns:                                                                 *
- * --------                                                                 *
- * word : str                                                               *
- *      -Converted word                                                     *
- * ======================================================================== */
+/* *
+ * Modification of bpe() function in OpenAI's CLIP module:                  
+ * https://github.com/openai/CLIP/blob/main/clip/simple_tokenizer.py#L62    
+ * Performs the byte-pair encoding to help encode some text.                
+ *                                                             
+ * @param[in] - token, str: Tokens to convert to word                                          
+ *                                                                
+ * @param[out] - word, str Converted word                                                     
+ * */
 std::string CLIPTokenizer::bpe(const std::string& token) {
     // Check cache first, memoization
     auto cache_it = cache.find(token);
