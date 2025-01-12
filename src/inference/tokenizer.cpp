@@ -1,6 +1,7 @@
 #include "tokeniser.h"
 #include <codecvt>
 #include <locale>
+#include <cmath>
 
 /*
 TODO:
@@ -229,7 +230,7 @@ bool check_keys(std::unordered_map<std::string, std::unordered_map<std::string, 
  *                                                             
  * @param[in] token str: Tokens to convert to word                                          
  *                                                                
- * @returns word str Converted word                                                     
+ * @returns word str: Converted word                                                     
  */
 std::string CLIPTokenizer::bpe(const std::string& token) {
     // Check cache first, memoization
@@ -252,10 +253,16 @@ std::string CLIPTokenizer::bpe(const std::string& token) {
         return token + "</w>";
     }
 
-    while (!pairs.empty()) {
+    int iteration = 0;
+
+    while (!pairs.empty() 
+            // && iteration < _max_iters
+            ) {
         // Set min to maximum possible intiger
-        int min = 2^31 - 1;
+        int min = 1 << 31;
+        min = min - 1; // Computes 2^31 as an integer
         std::pair<std::string, std::string> best_pair = {"", ""};
+        bool found_pair = false;
         
         // Iterate through set and get minimum value
         for (auto it = pairs.begin(); it != pairs.end(); ++it) {
@@ -263,6 +270,7 @@ std::string CLIPTokenizer::bpe(const std::string& token) {
             if (check_keys(bpe_ranks, it->first, it->second)) {
                 if (bpe_ranks[it->first][it->second] < min) {
                     // Update min value and best pair if better than existing
+                    found_pair = true;
                     min = bpe_ranks[it->first][it->second];
                     best_pair.first = it->first;
                     best_pair.second = it->second;
@@ -272,6 +280,10 @@ std::string CLIPTokenizer::bpe(const std::string& token) {
                 std::cerr << "Pair : " <<it->first << ", " << it->second << " does not exist in bpe_ranks" << std::endl;
                 break;
             }
+        }
+
+        if (!found_pair) {
+            break;
         }
 
         std::vector<std::string> new_word;
@@ -306,7 +318,7 @@ std::string CLIPTokenizer::bpe(const std::string& token) {
 
         // Else, update pairs
         pairs = get_pairs(word);
-
+        iteration++;
     }
 
     // Convert word back to string

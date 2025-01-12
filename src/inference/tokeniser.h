@@ -66,7 +66,7 @@ private:
 
     // Debugging mode
     bool                                    _debug {true};
-
+    int                                     _max_iters {100};
 };
 
 #endif // CLIP_TOKENIZER_H
