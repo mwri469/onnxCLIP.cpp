@@ -4,8 +4,13 @@
 
 /*
 TODO:
--Fix byte_decoder, wstring is such a headache
--**bpe() running infinite loop through (t,o) -> (h,o) -> (o,t)**
+%   Fix byte_decoder, wstring is such a headache
+%   bpe() infinite loop
+%       -Update 24/01/13: 
+%       -bpe() still running loop, changed constructor to init bpe_ranks
+%       -Adding max iter limit to exit out
+%       -Add better debugging using new _debug attr
+%       -Add flag to track valid pairs
 */
 
 /**
