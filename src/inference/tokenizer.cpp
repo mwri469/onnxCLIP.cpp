@@ -41,6 +41,12 @@ CLIPTokenizer::CLIPTokenizer(const std::string bpe_path) {
     std::vector<std::pair<std::string, std::string>> merges;
     merges = open_bpe(bpe_path);
 
+    // Initialize bpe_ranks with the merges
+    for (size_t i = 0; i < merges.size(); ++i) {
+        const auto& pair = merges[i];
+        bpe_ranks[pair.first][pair.second] = i;
+    }
+
     // Initialize vocabulary
     std::vector<std::string> vocab;
     for (const auto& v : byte_encoder) {
