@@ -8,12 +8,12 @@ TODO:
 -**bpe() running infinite loop through (t,o) -> (h,o) -> (o,t)**
 */
 
-/* *
+/**
  * Header function: initialise required variables and set up bpe
  *
- * @param[in] - bpe_path, str: path to .txt file containing bpe encodings
+ * @param[in] bpe_path str: path to .txt file containing bpe encodings
  * */
-CLIPTokenizer::CLIPTokenizer(const std::string& bpe_path) {
+CLIPTokenizer::CLIPTokenizer(const std::string bpe_path) {
     // Default pattern matching tokens
     pat = std::regex(R"(<\|startoftext\|>|<\|endoftext\|>|'s|'t|'re|'ve|'m|'ll|'d|[\p{L}]+|[\p{N}]|[^\s\p{L}\p{N}]+)", 
                      std::regex::icase);
@@ -39,8 +39,7 @@ CLIPTokenizer::CLIPTokenizer(const std::string& bpe_path) {
     // Load BPE merges (you'll need to implement this part)
     // For now, this is a placeholder
     std::vector<std::pair<std::string, std::string>> merges;
-    std::string path="/home/teknique/clip_onnx_cpp_inference/src/data/bpe_simple_vocab_16e6.txt";
-    merges = open_bpe(path);
+    merges = open_bpe(bpe_path);
 
     // Initialize vocabulary
     std::vector<std::string> vocab;
@@ -90,7 +89,7 @@ std::wstring CLIPTokenizer::bytes_to_wide(const std::string& input) {
  * @param[out] merges vector<byte, char>: vector of string pairs containing the BPE
  *                 encondings               
  */
-std::vector<std::pair<std::string, std::string>> CLIPTokenizer::open_bpe(std::string &path)
+std::vector<std::pair<std::string, std::string>> CLIPTokenizer::open_bpe(std::string path)
 {
     // init merges data structure and line
     std::vector <std::pair<std::string,std::string>> merges;

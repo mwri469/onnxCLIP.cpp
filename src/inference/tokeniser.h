@@ -14,7 +14,7 @@
 
 class CLIPTokenizer {
 public:
-    CLIPTokenizer(const std::string& bpe_path = "");
+    CLIPTokenizer(const std::string bpe_path = "");
     
     // Main encoding methods
     std::vector<int> encode(const std::string& text);
@@ -47,7 +47,7 @@ private:
     std::string bpe(const std::string& token);
     std::string basic_clean(const std::string& text);
     std::string whitespace_clean(const std::string& text);
-    std::vector<std::pair<std::string, std::string>> open_bpe(std::string& path);
+    std::vector<std::pair<std::string, std::string>> open_bpe(const std::string bpe_path);
     // std::unordered_map<int, std::string> bytes_to_unicode();
 
     // Hash function for pair hashing
