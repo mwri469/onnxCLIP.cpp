@@ -11,6 +11,8 @@ project(${project_name})
 # find_library(Torchvision_LIBRARIES torchvision REQUIRED PATHS /usr/local/lib)
 # set(CMAKE_CXX_FLAGS, "${CMAKE_CXX_FLAGS}, ${TORCH_CXX_FLAGS}")
 
+find_package(GTest REQUIRED)
+
 # Include directories for Torchvision
 # include_directories(/usr/local/include)
 # Include directories for headers
@@ -25,6 +27,17 @@ add_executable(print_vocab
                 src/main.cpp
                 src/inference/tokenizer.cpp)
 
+add_executable(tokenizer_test
+                tests/tokenizer_test.cpp)
+target_link_libraries(tokenizer_test
+                        PRIVATE
+                        GTest::GTest
+                        GTest::Main
+                        ${project_name}-lib)      
+
+# Enable testing
+enable_testing()
+add_test(NAME tokenizer_test COMMAND tokenizer_test)
 # Link torch libs to the executable
 # target_link_libraries(print_vocab "${TORCH_LIBRARIES}" "${Torchvision_LIBRARIES}")
 
