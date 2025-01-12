@@ -27,11 +27,12 @@ public:
         bool truncate = false
     );
 
+    std::unordered_map<int, std::string> decoder;
+    std::unordered_map<std::string, int> encoder;
+
 private:
     // Byte encoding helpers
     std::unordered_map<int, char> byte_decoder;
-    std::unordered_map<int, std::string> decoder;
-    std::unordered_map<std::string, int> encoder;
     std::unordered_map<std::string, std::unordered_map<std::string, int>> bpe_ranks;
     
     // Cache for BPE results
