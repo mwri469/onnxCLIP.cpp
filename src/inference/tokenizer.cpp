@@ -242,7 +242,7 @@ std::string CLIPTokenizer::bpe(const std::string& token) {
         return token + "</w>";
     }
 
-    while (true) {
+    while (!pairs.empty()) {
         // Set min to maximum possible intiger
         int min = 2^31 - 1;
         std::pair<std::string, std::string> best_pair = {"", ""};
@@ -259,7 +259,8 @@ std::string CLIPTokenizer::bpe(const std::string& token) {
                 }
             } else {
                 // pair does not exist
-                std::cout << "Pair : " <<it->first << ", " << it->second << " does not exist in bpe_ranks" << std::endl;
+                std::cerr << "Pair : " <<it->first << ", " << it->second << " does not exist in bpe_ranks" << std::endl;
+                break;
             }
         }
 
