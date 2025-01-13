@@ -4,8 +4,10 @@
 #include <cmath>
 
 /*
-TODO:
-%   Fix byte_decoder, wstring is such a headache
+TODO:   
+%   Properly implement byte_decoder, wstring is such a headache
+%   C++ ftfy workaround
+DONE:
 %   bpe() infinite loop
 %       -Update 24/01/13: 
 %       -bpe() still running loop, changed constructor to init bpe_ranks
