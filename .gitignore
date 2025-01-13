@@ -2,3 +2,4 @@ torchvision
 libtorch
 onnxruntime-linux-x64-1.20.1
 build
+CMakeLists[1-9]*.txt

@@ -14,39 +14,27 @@
 
 class CLIPTokenizer {
 public:
-    CLIPTokenizer(const std::string& bpe_path = "");
+    CLIPTokenizer(const std::string bpe_path = "");
     
     // Main encoding methods
-    std::vector<int> encode(const std::string& text);
-    std::string decode(const std::vector<int>& tokens);
+    std::vector<int>                        encode(const std::string& text);
+    std::string                             decode(const std::vector<int>& tokens);
     
     // Encode text with context length and truncation
-    std::vector<int> encode_text(
-        const std::string& text, 
-        int context_length = 77, 
-        bool truncate = false
-    );
-
+    std::vector<int>                        encode_text(
+                                            const std::string& text, 
+                                            int context_length = 77, 
+                                            bool truncate = false
+                                            );
 private:
-    // Byte encoding helpers
-    std::unordered_map<int, char> byte_decoder;
-    std::unordered_map<int, std::string> decoder;
-    std::unordered_map<std::string, int> encoder;
-    std::unordered_map<std::string, std::unordered_map<std::string, int>> bpe_ranks;
-    
-    // Cache for BPE results
-    std::unordered_map<std::string, std::string> cache;
-    
-    // Regex pattern for tokenization
-    std::regex pat;
-
     // Internal helper methods
-    std::unordered_map<int, std::string> bytes_to_unicode();
-    std::set<std::pair<std::string, std::string>> get_pairs(const std::vector<std::string>& word);
-    std::string bpe(const std::string& token);
-    std::string basic_clean(const std::string& text);
-    std::string whitespace_clean(const std::string& text);
-    std::vector<std::pair<std::string, std::string>> open_bpe(std::string& path);
+    std::unordered_map<int, std::string>            bytes_to_unicode();
+    std::set<std::pair<std::string, std::string>>   get_pairs(const std::vector<std::string>& word);
+    std::string                                     bpe(const std::string& token);
+    std::string                                     basic_clean(const std::string& text);
+    std::string                                     whitespace_clean(const std::string& text);
+    std::vector<std::pair<std::string, 
+                            std::string>>           open_bpe(const std::string bpe_path);
     // std::unordered_map<int, std::string> bytes_to_unicode();
 
     // Hash function for pair hashing
@@ -58,6 +46,27 @@ private:
             return h1 ^ h2;
         }
     };
+
+public:
+    std::unordered_map<int, std::string>    decoder;
+    std::unordered_map<std::string, int>    encoder;
+private:
+    // Byte encoding helpers
+    std::unordered_map<int, char>           byte_decoder;
+    std::unordered_map<std::string, 
+                        std::unordered_map
+                        <std::string, int>> bpe_ranks;
+    
+    // Cache for BPE results
+    std::unordered_map<std::string, 
+                    std::string>            cache;
+    
+    // Regex pattern for tokenization
+    std::regex                              pat;
+
+    // Debugging mode
+    bool                                    _debug {true};
+    int                                     _max_iters {100};
 };
 
 #endif // CLIP_TOKENIZER_H

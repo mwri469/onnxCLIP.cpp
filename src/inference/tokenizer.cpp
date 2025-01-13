@@ -1,19 +1,25 @@
 #include "tokeniser.h"
 #include <codecvt>
 #include <locale>
+#include <cmath>
 
 /*
 TODO:
--Fix byte_decoder, wstring is such a headache
--**bpe() running infinite loop through (t,o) -> (h,o) -> (o,t)**
+%   Fix byte_decoder, wstring is such a headache
+%   bpe() infinite loop
+%       -Update 24/01/13: 
+%       -bpe() still running loop, changed constructor to init bpe_ranks
+%       -Adding max iter limit to exit out
+%       -Add better debugging using new _debug attr
+%       -Add flag to track valid pairs
 */
 
-/* *
+/**
  * Header function: initialise required variables and set up bpe
  *
- * @param[in] - bpe_path, str: path to .txt file containing bpe encodings
+ * @param[in] bpe_path str: path to .txt file containing bpe encodings
  * */
-CLIPTokenizer::CLIPTokenizer(const std::string& bpe_path) {
+CLIPTokenizer::CLIPTokenizer(const std::string bpe_path) {
     // Default pattern matching tokens
     pat = std::regex(R"(<\|startoftext\|>|<\|endoftext\|>|'s|'t|'re|'ve|'m|'ll|'d|[\p{L}]+|[\p{N}]|[^\s\p{L}\p{N}]+)", 
                      std::regex::icase);
@@ -39,8 +45,13 @@ CLIPTokenizer::CLIPTokenizer(const std::string& bpe_path) {
     // Load BPE merges (you'll need to implement this part)
     // For now, this is a placeholder
     std::vector<std::pair<std::string, std::string>> merges;
-    std::string path="/home/teknique/clip_onnx_cpp_inference/src/data/bpe_simple_vocab_16e6.txt";
-    merges = open_bpe(path);
+    merges = open_bpe(bpe_path);
+
+    // Initialize bpe_ranks with the merges
+    for (size_t i = 0; i < merges.size(); ++i) {
+        const auto& pair = merges[i];
+        bpe_ranks[pair.first][pair.second] = i;
+    }
 
     // Initialize vocabulary
     std::vector<std::string> vocab;
@@ -83,14 +94,14 @@ std::wstring CLIPTokenizer::bytes_to_wide(const std::string& input) {
 }
 */ 
 
-/* *
+/**
  * Default function to open a byte-pair encoding .txt file.                
  *                                                        
- * @param[in] - path, str: Path to BPE.txt file                                                                                                              
- * @param[out] - merges, vector<byte, char>: vector of string pairs containing the BPE
+ * @param[in] path str: Path to BPE.txt file                                                                                                              
+ * @param[out] merges vector<byte, char>: vector of string pairs containing the BPE
  *                 encondings               
- * */
-std::vector<std::pair<std::string, std::string>> CLIPTokenizer::open_bpe(std::string &path)
+ */
+std::vector<std::pair<std::string, std::string>> CLIPTokenizer::open_bpe(std::string path)
 {
     // init merges data structure and line
     std::vector <std::pair<std::string,std::string>> merges;
@@ -124,11 +135,11 @@ std::vector<std::pair<std::string, std::string>> CLIPTokenizer::open_bpe(std::st
     return merges;
 }
 
-/* *
+/**
  * Function to convert byte string to unicode
  *
- * @param[out] - byte_encoder, map<int, str>: byte value->character mapping
- * */
+ * @param[out] byte_encoder map<int, str>: byte value->character mapping
+ */
 std::unordered_map<int, std::string> CLIPTokenizer::bytes_to_unicode() {
     std::unordered_map<int, std::string> byte_encoder;
     
@@ -156,11 +167,13 @@ std::unordered_map<int, std::string> CLIPTokenizer::bytes_to_unicode() {
     return byte_encoder;
 }
 
-/* *
+/**
  * Create pairs map of two tokens in a word stream
  *
- * @param[in] - word, vector<str>:
- * */
+ * @param[in] word vector<str>: word stream
+ * 
+ * @returns pairs set<pair<str, str>>: map of pair.first -> pair.second tokens
+ */
 std::set<std::pair<std::string, std::string>> CLIPTokenizer::get_pairs(const std::vector<std::string>& word) {
     std::set<std::pair<std::string, std::string>> pairs;
     for (size_t i = 0; i < word.size() - 1; ++i) {
@@ -170,6 +183,7 @@ std::set<std::pair<std::string, std::string>> CLIPTokenizer::get_pairs(const std
 }
 
 std::string CLIPTokenizer::basic_clean(const std::string& text) {
+    // Demo function implemented to emultate ftfy python library
     // Note: Full implementation of ftfy.fix_text would require additional library
     // This is a simplified version
     std::string cleaned = text;
@@ -187,15 +201,15 @@ std::string CLIPTokenizer::whitespace_clean(const std::string& text) {
     return std::regex_replace(text, ws_regex, " ");
 }
 
-/* *
+/**
  * Determines if a nested map contains a combination of two keys type<str>  
  *                                               
- * @param[in] - mapping, map<str, map<str, int>>: Outer-most map to search 
+ * @param[in] mapping map<str, map<str, int>>: Outer-most map to search 
  *                through                                   
- * @param[in] - key1, str: key to use for finding outer map                                   
- * @param[in] - key2, str: key to use for finding inner map                                   
- * @param[out] - bool: True if both keys exist, else false                                
- * */
+ * @param[in] key1 str: key to use for finding outer map                                   
+ * @param[in] key2 str: key to use for finding inner map                                   
+ * @returns bool: `true` if both keys exist, else `false`                                
+ */
 bool check_keys(std::unordered_map<std::string, std::unordered_map<std::string, int>> mapping, std::string key1, std::string key2) {
     // Find first key in outer map
     auto it_inner = mapping.find(key1);
@@ -209,15 +223,15 @@ bool check_keys(std::unordered_map<std::string, std::unordered_map<std::string, 
     return false;
 }
 
-/* *
+/**
  * Modification of bpe() function in OpenAI's CLIP module:                  
  * https://github.com/openai/CLIP/blob/main/clip/simple_tokenizer.py#L62    
  * Performs the byte-pair encoding to help encode some text.                
  *                                                             
- * @param[in] - token, str: Tokens to convert to word                                          
+ * @param[in] token str: Tokens to convert to word                                          
  *                                                                
- * @param[out] - word, str Converted word                                                     
- * */
+ * @returns word str: Converted word                                                     
+ */
 std::string CLIPTokenizer::bpe(const std::string& token) {
     // Check cache first, memoization
     auto cache_it = cache.find(token);
@@ -239,10 +253,16 @@ std::string CLIPTokenizer::bpe(const std::string& token) {
         return token + "</w>";
     }
 
-    while (true) {
+    int iteration = 0;
+
+    while (!pairs.empty() 
+            // && iteration < _max_iters
+            ) {
         // Set min to maximum possible intiger
-        int min = 2^31 - 1;
+        int min = 1 << 31;
+        min = min - 1; // Computes 2^31 as an integer
         std::pair<std::string, std::string> best_pair = {"", ""};
+        bool found_pair = false;
         
         // Iterate through set and get minimum value
         for (auto it = pairs.begin(); it != pairs.end(); ++it) {
@@ -250,14 +270,20 @@ std::string CLIPTokenizer::bpe(const std::string& token) {
             if (check_keys(bpe_ranks, it->first, it->second)) {
                 if (bpe_ranks[it->first][it->second] < min) {
                     // Update min value and best pair if better than existing
+                    found_pair = true;
                     min = bpe_ranks[it->first][it->second];
                     best_pair.first = it->first;
                     best_pair.second = it->second;
                 }
             } else {
                 // pair does not exist
-                std::cout << "Pair : " <<it->first << ", " << it->second << " does not exist in bpe_ranks" << std::endl;
+                std::cerr << "Pair : " <<it->first << ", " << it->second << " does not exist in bpe_ranks" << std::endl;
+                break;
             }
+        }
+
+        if (!found_pair) {
+            break;
         }
 
         std::vector<std::string> new_word;
@@ -292,7 +318,7 @@ std::string CLIPTokenizer::bpe(const std::string& token) {
 
         // Else, update pairs
         pairs = get_pairs(word);
-
+        iteration++;
     }
 
     // Convert word back to string
