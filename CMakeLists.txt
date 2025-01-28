@@ -20,7 +20,9 @@ include_directories(src/inference)
 
 add_library(${project_name}-lib
         src/inference/tokenizer.cpp
-        src/inference/tokeniszer.hpp)
+        src/inference/tokeniszer.hpp
+        src/inference/preprocessor.hpp
+        src/inference/preprocessor.cpp)
 
 # Executable to add that will be compiled and run
 add_executable(print_vocab 
