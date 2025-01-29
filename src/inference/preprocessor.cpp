@@ -1,6 +1,12 @@
 #include "preprocessor.hpp"
 #include <stdexcept>
 
+/*
+TODO:
+Fix linking with preprocessor.hpp
+Test embeddings on target images in assets/
+*/
+
 // Initialize static constants
 const std::array<float, 3> Preprocessor::NORM_MEAN = {0.48145466f, 0.4578275f, 0.40821073f};
 const std::array<float, 3> Preprocessor::NORM_STD = {0.26862954f, 0.26130258f, 0.27577711f};
