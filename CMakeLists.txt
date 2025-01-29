@@ -23,7 +23,7 @@ include_directories(src/inference)
 
 add_library(${project_name}-lib
         src/inference/tokenizer.cpp
-        src/inference/tokeniszer.hpp
+        src/inference/tokenizer.hpp
         src/inference/preprocessor.hpp
         src/inference/preprocessor.cpp)
 
