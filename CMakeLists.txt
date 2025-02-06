@@ -7,7 +7,13 @@ project(${project_name})
 #### INCLUDES #################################################################
 ###############################################################################
 
-find_package(GTest REQUIRED)
+# Set paths
+set(LIBTORCH_DIR "${CMAKE_SOURCE_DIR}/libtorch")
+set(ONNXRUNTIME_DIR "${CMAKE_SOURCE_DIR}/onnxruntime-linux-x64-1.20.1")
+
+list(APPEND CMAKE_PREFIX_PATH "${LIBTORCH_DIR}")
+find_package(Torch REQUIRED)
+find_package(OpenCV REQUIRED)
 
 include_directories(src/inference)
 
@@ -27,24 +33,33 @@ add_library(${project_name}-lib
         src/inference/preprocessor.hpp
         src/inference/preprocessor.cpp)
 
+target_link_libraries(${project_name}-lib
+        PUBLIC ${OpenCV_LIBS}
+        PUBLIC ${TORCH_LIBRARIES})
+
 ###############################################################################
 #### GENERATE OUTPUT ##########################################################
 ###############################################################################
 
 # Executable to add that will be compiled and run
 add_executable(clip_cpp 
-                src/main.cpp
-                src/inference/tokenizer.cpp)
+                src/main.cpp)
+target_link_libraries(clip_cpp
+                ${project_name}-lib)
 
+###############################################################################
+#### TESTING ##################################################################
+###############################################################################
 add_executable(tokenizer_test
                 tests/tokenizer_test.cpp)
 target_link_libraries(tokenizer_test
-                        PRIVATE
-                        GTest::GTest
-                        GTest::Main
-                        ${project_name}-lib)      
+                ${project_name}-lib
+                pthread)
+                
 
-# Enable testing
-enable_testing()
-add_test(NAME tokenizer_test COMMAND tokenizer_test)
+add_executable(preprocessor_test
+                tests/preprocessor_test.cpp)
+target_link_libraries(preprocessor_test
+                ${project_name}-lib
+                pthread)                
 
