@@ -8,10 +8,10 @@ Test embeddings on target images in assets/
 */
 
 // Initialize static constants
-const std::array<float, 3> Preprocessor::NORM_MEAN = {0.48145466f, 0.4578275f, 0.40821073f};
-const std::array<float, 3> Preprocessor::NORM_STD = {0.26862954f, 0.26130258f, 0.27577711f};
+const std::array<float, 3> CLIPpreprocessor::NORM_MEAN = {0.48145466f, 0.4578275f, 0.40821073f};
+const std::array<float, 3> CLIPpreprocessor::NORM_STD = {0.26862954f, 0.26130258f, 0.27577711f};
 
-cv::Mat Preprocessor::encodeImage(const cv::Mat& img) {
+cv::Mat CLIPpreprocessor::encodeImage(const cv::Mat& img) {
     // Convert input image to standardized float array
     cv::Mat processedImg = imageToFloatArray(img);
     
@@ -42,7 +42,7 @@ cv::Mat Preprocessor::encodeImage(const cv::Mat& img) {
     return output;
 }
 
-cv::Mat Preprocessor::_cropAndResize(const cv::Mat& img) {
+cv::Mat CLIPpreprocessor::_cropAndResize(const cv::Mat& img) {
     int h = img.rows;
     int w = img.cols;
     
@@ -72,7 +72,7 @@ cv::Mat Preprocessor::_cropAndResize(const cv::Mat& img) {
     return resized(roi).clone();
 }
 
-cv::Mat Preprocessor::_imageToFloatArray(const cv::Mat& img) {
+cv::Mat CLIPpreprocessor::_imageToFloatArray(const cv::Mat& img) {
     validateImage(img);
     
     cv::Mat float_img;
@@ -95,7 +95,7 @@ cv::Mat Preprocessor::_imageToFloatArray(const cv::Mat& img) {
     return output;
 }
 
-void Preprocessor::_validateImage(const cv::Mat& img) {
+void CLIPpreprocessor::_validateImage(const cv::Mat& img) {
     if (img.empty()) {
         throw std::invalid_argument("Input image is empty");
     }
@@ -113,7 +113,7 @@ void Preprocessor::_validateImage(const cv::Mat& img) {
     }
 }
 
-cv::Mat Preprocessor::_normaliseChannels(const cv::Mat& img) {
+cv::Mat CLIPpreprocessor::_normaliseChannels(const cv::Mat& img) {
     cv::Mat normalised;
     img.convertTo(normalised, CV_32F);
     

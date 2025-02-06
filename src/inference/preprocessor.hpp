@@ -7,6 +7,8 @@
 #include <array>
 #include <opencv2/opencv.hpp>
 
+#define CLIP_INPUT_SIZE 224
+
 class CLIPpreprocessor {
 public:
 	// Constructor/destructor
@@ -30,4 +32,4 @@ private:
     static cv::Mat _normalizeChannels(const cv::Mat& img);
 }
 
-#endif CLIP_PREPROCESSOR_H
+#endif // CLIP_PREPROCESSOR_H
