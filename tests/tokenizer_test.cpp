@@ -1,124 +1,173 @@
-#include <gtest/gtest.h>
-#include "../src/inference/tokeniser.h"
+#include <iostream>
 #include <vector>
 #include <string>
+#include "../src/inference/tokenizer.hpp"
 
-class CLIPTokenizerTest : public ::testing::Test {
-protected:
-    CLIPTokenizer* tokenizer;
-
-    void SetUp() override {
-        // Initialize tokenizer with the BPE file path
-        tokenizer = new CLIPTokenizer("../src/data/bpe_simple_vocab_16e6.txt");
-    }
-
-    void TearDown() override {
-        delete tokenizer;
-    }
-};
-
-// Test basic tokenization
-TEST_F(CLIPTokenizerTest, BasicTokenization) {
+bool test_basic_tokenization() {
+    std::cout << "=== Running test: BasicTokenization ===" << std::endl;
+    CLIPTokenizer tokenizer("../src/data/bpe_simple_vocab_16e6.txt");
     std::string text = "Hello world";
-    std::vector<int> tokens = tokenizer->encode(text);
+    std::vector<int> tokens = tokenizer.encode(text);
 
-    std::cout << "\"" << text << "\" tokenised: " << std::endl;
-    for (auto str : tokens) {
-        std::cout << str << " ";
+    std::cout << "\"" << text << "\" tokenized: ";
+    for (auto token : tokens) {
+        std::cout << token << " ";
     }
     std::cout << std::endl;
-    
-    // Check that we got some tokens
-    ASSERT_FALSE(tokens.empty());
-    
-    // Decode back to text
-    std::string decoded = tokenizer->decode(tokens);
-    
-    // Check that the decoded text contains our input
-    // Note: The exact match might not happen due to BPE tokenization
-    // EXPECT_TRUE(decoded.find("hello") != std::string::npos);
-    // EXPECT_TRUE(decoded.find("world") != std::string::npos);
+
+    if (tokens.empty()) {
+        std::cerr << "Error: Tokens are empty." << std::endl;
+        return false;
+    }
+
+    std::string decoded = tokenizer.decode(tokens);
+    std::cout << "Decoded text: \"" << decoded << "\"" << std::endl;
+    return true;
 }
 
-// Test special tokens
-TEST_F(CLIPTokenizerTest, SpecialTokens) {
+bool test_special_tokens() {
+    std::cout << "=== Running test: SpecialTokens ===" << std::endl;
+    CLIPTokenizer tokenizer("../src/data/bpe_simple_vocab_16e6.txt");
     std::string text = "Test";
-    std::vector<int> tokens = tokenizer->encode_text(text, 77, true);
-    
-    // Check that the first token is start of text
-    EXPECT_EQ(tokens[0], tokenizer->encoder["<|startoftext|>"]);
-    
-    // Find the end of text token
+    std::vector<int> tokens = tokenizer.encode_text(text, 77, true);
+
+    int start_token = tokenizer.encoder.at("<|startoftext|>");
+    if (tokens.empty() || tokens[0] != start_token) {
+        std::cerr << "Error: First token is not <|startoftext|>." << std::endl;
+        return false;
+    }
+
+    int end_token = tokenizer.encoder.at("<|endoftext|>");
     bool found_eot = false;
     for (int token : tokens) {
-        if (token == tokenizer->encoder["<|endoftext|>"]) {
+        if (token == end_token) {
             found_eot = true;
             break;
         }
     }
-    EXPECT_TRUE(found_eot);
+
+    if (!found_eot) {
+        std::cerr << "Error: <|endoftext|> not found in tokens." << std::endl;
+        return false;
+    }
+
+    std::cout << "Special tokens test passed." << std::endl;
+    return true;
 }
 
-// Test context length handling
-TEST_F(CLIPTokenizerTest, ContextLength) {
+bool test_context_length() {
+    std::cout << "=== Running test: ContextLength ===" << std::endl;
+    CLIPTokenizer tokenizer("../src/data/bpe_simple_vocab_16e6.txt");
     std::string text = "This is a long text that should be truncated according to the context length";
     int context_length = 10;
-    
-    std::vector<int> tokens = tokenizer->encode_text(text, context_length, true);
-    
-    // Check that the output length matches the context length
-    EXPECT_EQ(tokens.size(), context_length);
+    std::vector<int> tokens = tokenizer.encode_text(text, context_length, true);
+
+    if (tokens.size() != context_length) {
+        std::cerr << "Error: Tokens size " << tokens.size() << " != " << context_length << std::endl;
+        return false;
+    }
+
+    std::cout << "Context length correctly truncated to " << context_length << std::endl;
+    return true;
 }
 
-// Test empty input
-TEST_F(CLIPTokenizerTest, EmptyInput) {
+bool test_empty_input() {
+    std::cout << "=== Running test: EmptyInput ===" << std::endl;
+    CLIPTokenizer tokenizer("../src/data/bpe_simple_vocab_16e6.txt");
     std::string text = "";
-    std::vector<int> tokens = tokenizer->encode(text);
-    
-    // Check that we get an empty token list
-    EXPECT_TRUE(tokens.empty());
+    std::vector<int> tokens = tokenizer.encode(text);
+
+    if (!tokens.empty()) {
+        std::cerr << "Error: Tokens not empty for empty input." << std::endl;
+        return false;
+    }
+
+    std::cout << "Empty input handled correctly." << std::endl;
+    return true;
 }
 
-// Test BPE function specifically
-TEST_F(CLIPTokenizerTest, BPEFunction) {
-    // Test a word that should trigger BPE merges
+bool test_bpe_function() {
+    std::cout << "=== Running test: BPEFunction ===" << std::endl;
+    CLIPTokenizer tokenizer("../src/data/bpe_simple_vocab_16e6.txt");
     std::string text = "testing";
-    std::vector<int> tokens = tokenizer->encode(text);
-    
-    // We should get at least one token
-    ASSERT_FALSE(tokens.empty());
-    
-    // Decode should give us something meaningful back
-    std::string decoded = tokenizer->decode(tokens);
-    EXPECT_FALSE(decoded.empty());
+    std::vector<int> tokens = tokenizer.encode(text);
+
+    if (tokens.empty()) {
+        std::cerr << "Error: No tokens generated for BPE test." << std::endl;
+        return false;
+    }
+
+    std::string decoded = tokenizer.decode(tokens);
+    if (decoded.empty()) {
+        std::cerr << "Error: Decoded text is empty." << std::endl;
+        return false;
+    }
+
+    std::cout << "BPE decoded text: \"" << decoded << "\"" << std::endl;
+    return true;
 }
 
-// Test whitespace handling
-TEST_F(CLIPTokenizerTest, WhitespaceHandling) {
+bool test_whitespace_handling() {
+    std::cout << "=== Running test: WhitespaceHandling ===" << std::endl;
+    CLIPTokenizer tokenizer("../src/data/bpe_simple_vocab_16e6.txt");
     std::string text = "  multiple    spaces   between   words  ";
-    std::vector<int> tokens = tokenizer->encode(text);
-    
-    std::string decoded = tokenizer->decode(tokens);
+    std::vector<int> tokens = tokenizer.encode(text);
+    std::string decoded = tokenizer.decode(tokens);
 
-    std::cout << "\"" << text << "\" becomes \"" << decoded << "\"" << std::endl;   
-    
-    // Check that excessive whitespace was normalized
-    EXPECT_FALSE(decoded.find("    ") != std::string::npos);
+    std::cout << "Original: \"" << text << "\"" << std::endl;
+    std::cout << "Decoded:  \"" << decoded << "\"" << std::endl;
+
+    if (decoded.find("    ") != std::string::npos) {
+        std::cerr << "Error: Multiple consecutive spaces in decoded text." << std::endl;
+        return false;
+    }
+
+    return true;
 }
 
-// Test case sensitivity
-TEST_F(CLIPTokenizerTest, CaseSensitivity) {
+bool test_case_sensitivity() {
+    std::cout << "=== Running test: CaseSensitivity ===" << std::endl;
+    CLIPTokenizer tokenizer("../src/data/bpe_simple_vocab_16e6.txt");
     std::string lower = "test";
     std::string upper = "TEST";
-    
-    std::vector<int> lower_tokens = tokenizer->encode(lower);
-    std::vector<int> upper_tokens = tokenizer->encode(upper);
-    
-    // Tokens should be the same as the tokenizer converts to lowercase
-    EXPECT_EQ(lower_tokens, upper_tokens);
+    std::vector<int> lower_tokens = tokenizer.encode(lower);
+    std::vector<int> upper_tokens = tokenizer.encode(upper);
+
+    if (lower_tokens != upper_tokens) {
+        std::cerr << "Error: Tokens differ between lowercase and uppercase input." << std::endl;
+        return false;
+    }
+
+    std::cout << "Case insensitivity verified." << std::endl;
+    return true;
 }
 
-int main(int argc, char **argv) {
-    testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+int main() {
+    int passed = 0;
+    int failed = 0;
+
+    auto run_test = [&](bool (*test_func)(), const std::string& name) {
+        bool result = test_func();
+        if (result) {
+            std::cout << "+++ PASSED +++\n" << std::endl;
+            passed++;
+        } else {
+            std::cout << "--- FAILED ---\n" << std::endl;
+            failed++;
+        }
+    };
+
+    run_test(test_basic_tokenization, "BasicTokenization");
+    run_test(test_special_tokens, "SpecialTokens");
+    run_test(test_context_length, "ContextLength");
+    run_test(test_empty_input, "EmptyInput");
+    run_test(test_bpe_function, "BPEFunction");
+    run_test(test_whitespace_handling, "WhitespaceHandling");
+    run_test(test_case_sensitivity, "CaseSensitivity");
+
+    std::cout << "Test Summary:" << std::endl;
+    std::cout << "Passed: " << passed << std::endl;
+    std::cout << "Failed: " << failed << std::endl;
+
+    return failed == 0 ? 0 : 1;
 }
