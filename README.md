@@ -54,7 +54,7 @@ Further, for ./clip_onnx_cpp_inference/tests, an install of Google Test is requi
 
 - [x] **Fix dev branch build errors for preprocesing:**
 - [x] Resolve dependency import error in preprocessor.cpp
-- [ ] Test CLIPpreprocessor class
+- [x] Test CLIPpreprocessor class
 - [ ] Add models.cpp to CMake file
 - [ ] Build models testing script
 - [ ] Test model class
