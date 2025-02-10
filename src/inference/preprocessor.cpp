@@ -1,9 +1,9 @@
 #include "preprocessor.hpp"
 
-const std::vector<float> Preprocessor::NORM_MEAN = {0.48145466f, 0.4578275f, 0.40821073f};
-const std::vector<float> Preprocessor::NORM_STD = {0.26862954f, 0.26130258f, 0.27577711f};
+const std::vector<float> CLIPpreprocessor::NORM_MEAN = {0.48145466f, 0.4578275f, 0.40821073f};
+const std::vector<float> CLIPpreprocessor::NORM_STD = {0.26862954f, 0.26130258f, 0.27577711f};
 
-torch::Tensor Preprocessor::encode_image(const cv::Mat& img) {
+torch::Tensor CLIPpreprocessor::encode_image(const cv::Mat& img) {
     cv::Mat float_img = _image_to_float_array(img);
     cv::Mat resized_img = _crop_and_resize(float_img);
 
@@ -19,7 +19,7 @@ torch::Tensor Preprocessor::encode_image(const cv::Mat& img) {
     return tensor_img;
 }
 
-cv::Mat Preprocessor::_crop_and_resize(const cv::Mat& img) {
+cv::Mat CLIPpreprocessor::_crop_and_resize(const cv::Mat& img) {
     int h = img.rows;
     int w = img.cols;
 
@@ -50,7 +50,7 @@ cv::Mat Preprocessor::_crop_and_resize(const cv::Mat& img) {
     return cropped_img;
 }
 
-cv::Mat Preprocessor::_image_to_float_array(const cv::Mat& img) {
+cv::Mat CLIPpreprocessor::_image_to_float_array(const cv::Mat& img) {
     if (img.channels() != 3 && img.channels() != 1) {
         throw std::invalid_argument("The image should have 1 or 3 channels.");
     }
