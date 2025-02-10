@@ -2,13 +2,10 @@ cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 set(project_name clip_cpp)
 project(${project_name})
 
-# Set the ABI flag globally (ensure consistency)
-string(REPLACE "-D_GLIBCXX_USE_CXX11_ABI=0" "" TORCH_CXX_FLAGS "${TORCH_CXX_FLAGS}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
-
 # Set paths
 set(LIBTORCH_DIR "${CMAKE_SOURCE_DIR}/libtorch")
 set(ONNXRUNTIME_DIR "${CMAKE_SOURCE_DIR}/onnxruntime-linux-x64-1.20.1")
+set(OpenCV_DIR "${CMAKE_SOURCE_DIR}/opencv/build")
 
 list(APPEND CMAKE_PREFIX_PATH "${LIBTORCH_DIR}")
 find_package(Torch REQUIRED)
