@@ -10,10 +10,13 @@ using namespace cv;
 // Forward declarations
 torch::Tensor load_tensor_from_txt(const std::string& file_path);  // Declare before use
 bool checkMatRange(const cv::Mat& mat, float min_val, float max_val);
+cv::Mat load_image(const std::string& filepath);
 
 const std::string ASSETS_PATH = "../assets/";
 
-// Helper function implementation
+/////////////////////////////////////////////////////////////////////////////////////////
+// Helper functions /////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
 bool checkMatRange(const cv::Mat& mat, float min_val, float max_val) {
     double minVal, maxVal;
     cv::minMaxLoc(mat, &minVal, &maxVal);
@@ -57,12 +60,39 @@ torch::Tensor load_tensor_from_txt(const std::string& file_path) {
     return torch::from_blob(data.data(), dims, torch::kFloat32).clone();
 }
 
+cv::Mat load_image(const std::string& filepath) {
+    // Open the file in binary mode
+    std::ifstream file(filepath, std::ios::binary | std::ios::ate);
+    if (!file.is_open()) {
+        return cv::Mat(); // Return empty matrix if file can't be opened
+    }
+
+    // Determine file size
+    std::streamsize size = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    // Read file into buffer
+    std::vector<char> buffer(size);
+    if (!file.read(buffer.data(), size)) {
+        return cv::Mat(); // Return empty matrix if read fails
+    }
+
+    // Decode the buffer into a cv::Mat
+    cv::Mat image = cv::imdecode(cv::Mat(1, size, CV_8UC1, buffer.data()), cv::IMREAD_COLOR);
+
+    return image;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// Testing functions ////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+
 // Fixed test functions
 bool test_basic_preprocessing() {
     std::cout << "=== Running test: BasicPreprocessing ===" << std::endl;
     CLIPpreprocessor preprocessor;
     string fp = ASSETS_PATH + "franz-kafka.jpg";
-    cv::Mat img = cv::imread(fp, IMREAD_COLOR);
+    cv::Mat img = load_image(fp);
     if (img.empty()) {
         std::cerr << "Error: Could not load test image." << std::endl;
         return false;
@@ -131,7 +161,7 @@ bool test_matches_original_clip() {
     
     // Load test image
     string fp = ASSETS_PATH + "franz-kafka.jpg";
-    cv::Mat img = cv::imread(fp,IMREAD_COLOR);
+    cv::Mat img = load_image(fp);
     if (img.empty()) {
         std::cerr << "Error: Could not load test image." << std::endl;
         return false;
@@ -177,7 +207,7 @@ bool test_normalization() {
     std::cout << "=== Running test: Normalization ===" << std::endl;
     CLIPpreprocessor preprocessor;
     string fp = ASSETS_PATH + "franz-kafka.jpg";
-    cv::Mat img = cv::imread(fp,IMREAD_COLOR);
+    cv::Mat img = load_image(fp);
     if (img.empty()) {
         std::cerr << "Error: Could not load test image." << std::endl;
         return false;
@@ -249,7 +279,7 @@ bool test_output_range() {
     std::cout << "=== Running test: OutputRange ===" << std::endl;
     CLIPpreprocessor preprocessor;
     string fp = ASSETS_PATH + "franz-kafka.jpg";
-    cv::Mat img = cv::imread(fp,IMREAD_COLOR);
+    cv::Mat img = load_image(fp);
     if (img.empty()) {
         std::cerr << "Error: Could not load test image." << std::endl;
         return false;
