@@ -75,8 +75,8 @@ bool test_basic_preprocessing() {
     if (sizes.size() != 4 || 
         sizes[0] != 1 || 
         sizes[1] != 3 || 
-        sizes[2] != Preprocessor::CLIP_INPUT_SIZE || 
-        sizes[3] != Preprocessor::CLIP_INPUT_SIZE) {
+        sizes[2] != CLIPpreprocessor::CLIP_INPUT_SIZE || 
+        sizes[3] != CLIPpreprocessor::CLIP_INPUT_SIZE) {
         std::cerr << "Error: Output dimensions incorrect." << std::endl;
         return false;
     }
@@ -115,8 +115,8 @@ bool test_grayscale_input() {
     auto sizes = processed.sizes();
     if (sizes.size() != 4 || 
         sizes[1] != 3 ||  // Should have 3 channels
-        sizes[2] != Preprocessor::CLIP_INPUT_SIZE || 
-        sizes[3] != Preprocessor::CLIP_INPUT_SIZE) {
+        sizes[2] != CLIPpreprocessor::CLIP_INPUT_SIZE || 
+        sizes[3] != CLIPpreprocessor::CLIP_INPUT_SIZE) {
         std::cerr << "Error: Output dimensions incorrect for grayscale input." << std::endl;
         return false;
     }
@@ -145,10 +145,10 @@ bool test_matches_original_clip() {
     if (sizes.size() != 4 || 
         sizes[0] != 1 || 
         sizes[1] != 3 || 
-        sizes[2] != Preprocessor::CLIP_INPUT_SIZE || 
-        sizes[3] != Preprocessor::CLIP_INPUT_SIZE) {
+        sizes[2] != CLIPpreprocessor::CLIP_INPUT_SIZE || 
+        sizes[3] != CLIPpreprocessor::CLIP_INPUT_SIZE) {
         std::cerr << "Error: Output dimensions incorrect. Expected [1, 3, "
-                  << Preprocessor::CLIP_INPUT_SIZE << ", " << Preprocessor::CLIP_INPUT_SIZE
+                  << CLIPpreprocessor::CLIP_INPUT_SIZE << ", " << CLIPpreprocessor::CLIP_INPUT_SIZE
                   << "], got [" << sizes[0] << ", " << sizes[1] << ", "
                   << sizes[2] << ", " << sizes[3] << "]" << std::endl;
         return false;
@@ -195,8 +195,8 @@ bool test_normalization() {
         
         // Create cv::Mat from tensor data
         cv::Mat channel(
-            Preprocessor::CLIP_INPUT_SIZE,
-            Preprocessor::CLIP_INPUT_SIZE,
+            CLIPpreprocessor::CLIP_INPUT_SIZE,
+            CLIPpreprocessor::CLIP_INPUT_SIZE,
             CV_32FC1,
             channel_tensor.data_ptr<float>()
         );
