@@ -6,7 +6,9 @@
 #include <stdexcept>
 #include <vector>
 
-class Preprocessor {
+#define CLIP_INPUT_SIZE 224
+
+class CLIPpreprocessor {
 public:
     static const int CLIP_INPUT_SIZE = 224;
     static const std::vector<float> NORM_MEAN;

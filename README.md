@@ -52,13 +52,13 @@ Further, for ./clip_onnx_cpp_inference/tests, an install of Google Test is requi
 
 ## ToDo
 
-[ ] **Fix dev branch build errors for preprocesing:**
-[ ] Resolve dependency import error in preprocessor.cpp
-[ ] Test CLIPpreprocessor class
-[ ] Add models.cpp to CMake file
-[ ] Build models testing script
-[ ] Test model class
-[ ] Develop basic example application for implementation
-[ ] Fix non-existent byte pairs in bpe_ranks in tokenizer
-[ ] Fix tokens to words not linking together well: "  multiple    spaces   between   words  " becomes "mu l ti pl e s p aces betwee n words "
-[x] bpe() running infinite loop through (t,o) -> (h,o) -> (o,t)
+- [x] **Fix dev branch build errors for preprocesing:**
+- [x] Resolve dependency import error in preprocessor.cpp
+- [ ] Test CLIPpreprocessor class
+- [ ] Add models.cpp to CMake file
+- [ ] Build models testing script
+- [ ] Test model class
+- [ ] Develop basic example application for implementation
+- [ ] Fix non-existent byte pairs in bpe_ranks in tokenizer
+- [ ] Fix tokens to words not linking together well: "  multiple    spaces   between   words  " becomes "mu l ti pl e s p aces betwee n words "
+- [x] bpe() running infinite loop through (t,o) -> (h,o) -> (o,t)
