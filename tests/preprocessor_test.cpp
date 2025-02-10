@@ -1,12 +1,8 @@
 #include "../src/inference/preprocessor.hpp"
-// #include <opencv2/opencv.hpp>
+#include <opencv2/opencv.hpp>
 #include <torch/torch.h>
 #include <iostream>
 #include <fstream>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/imgcodecs/imgcodecs.hpp>
 
 using namespace std;
 using namespace cv;
@@ -64,7 +60,7 @@ torch::Tensor load_tensor_from_txt(const std::string& file_path) {
 // Fixed test functions
 bool test_basic_preprocessing() {
     std::cout << "=== Running test: BasicPreprocessing ===" << std::endl;
-    Preprocessor preprocessor;
+    CLIPpreprocessor preprocessor;
     string fp = ASSETS_PATH + "franz-kafka.jpg";
     cv::Mat img = cv::imread(fp, IMREAD_COLOR);
     if (img.empty()) {
@@ -91,7 +87,7 @@ bool test_basic_preprocessing() {
 
 bool test_different_input_sizes() {
     std::cout << "=== Running test: DifferentInputSizes ===" << std::endl;
-    Preprocessor preprocessor;
+    CLIPpreprocessor preprocessor;
 
     cv::Mat tall_img(480, 320, CV_8UC3, cv::Scalar(255, 255, 255));
     torch::Tensor processed_tall = preprocessor.encode_image(tall_img);
@@ -111,7 +107,7 @@ bool test_different_input_sizes() {
 
 bool test_grayscale_input() {
     std::cout << "=== Running test: GrayscaleInput ===" << std::endl;
-    Preprocessor preprocessor;
+    CLIPpreprocessor preprocessor;
     cv::Mat gray_img(224, 224, CV_8UC1, cv::Scalar(128));
     torch::Tensor processed = preprocessor.encode_image(gray_img);
 
@@ -131,7 +127,7 @@ bool test_grayscale_input() {
 
 bool test_matches_original_clip() {
     std::cout << "=== Running test: MatchesOriginalCLIP ===" << std::endl;
-    Preprocessor preprocessor;
+    CLIPpreprocessor preprocessor;
     
     // Load test image
     string fp = ASSETS_PATH + "franz-kafka.jpg";
@@ -179,7 +175,7 @@ bool test_matches_original_clip() {
 
 bool test_normalization() {
     std::cout << "=== Running test: Normalization ===" << std::endl;
-    Preprocessor preprocessor;
+    CLIPpreprocessor preprocessor;
     string fp = ASSETS_PATH + "franz-kafka.jpg";
     cv::Mat img = cv::imread(fp,IMREAD_COLOR);
     if (img.empty()) {
@@ -223,7 +219,7 @@ bool test_normalization() {
 
 bool test_invalid_inputs() {
     std::cout << "=== Running test: InvalidInputs ===" << std::endl;
-    Preprocessor preprocessor;
+    CLIPpreprocessor preprocessor;
 
     // Empty image
     cv::Mat empty_img;
@@ -251,7 +247,7 @@ bool test_invalid_inputs() {
 
 bool test_output_range() {
     std::cout << "=== Running test: OutputRange ===" << std::endl;
-    Preprocessor preprocessor;
+    CLIPpreprocessor preprocessor;
     string fp = ASSETS_PATH + "franz-kafka.jpg";
     cv::Mat img = cv::imread(fp,IMREAD_COLOR);
     if (img.empty()) {
