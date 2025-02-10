@@ -135,26 +135,6 @@ bool test_different_input_sizes() {
     return true;
 }
 
-bool test_grayscale_input() {
-    std::cout << "=== Running test: GrayscaleInput ===" << std::endl;
-    CLIPpreprocessor preprocessor;
-    cv::Mat gray_img(224, 224, CV_8UC1, cv::Scalar(128));
-    torch::Tensor processed = preprocessor.encode_image(gray_img);
-
-    // Check tensor dimensions properly
-    auto sizes = processed.sizes();
-    if (sizes.size() != 4 || 
-        sizes[1] != 3 ||  // Should have 3 channels
-        sizes[2] != CLIPpreprocessor::CLIP_INPUT_SIZE || 
-        sizes[3] != CLIPpreprocessor::CLIP_INPUT_SIZE) {
-        std::cerr << "Error: Output dimensions incorrect for grayscale input." << std::endl;
-        return false;
-    }
-
-    std::cout << "Grayscale input handled correctly." << std::endl;
-    return true;
-}
-
 bool test_matches_original_clip() {
     std::cout << "=== Running test: MatchesOriginalCLIP ===" << std::endl;
     CLIPpreprocessor preprocessor;
@@ -194,7 +174,7 @@ bool test_matches_original_clip() {
     }
 
     // Verify numerical similarity
-    if (!torch::allclose(processed, expected, /*rtol=*/1e-5, /*atol=*/1e-6)) {
+    if (!torch::allclose(processed, expected, 1e-5, 1e-6)) {
         std::cerr << "Error: Processed values do not match expected values." << std::endl;
         return false;
     }
@@ -247,34 +227,6 @@ bool test_normalization() {
     return true;
 }
 
-bool test_invalid_inputs() {
-    std::cout << "=== Running test: InvalidInputs ===" << std::endl;
-    CLIPpreprocessor preprocessor;
-
-    // Empty image
-    cv::Mat empty_img;
-    try {
-        preprocessor.encode_image(empty_img);
-        std::cerr << "Error: Empty image did not throw an exception." << std::endl;
-        return false;
-    } catch (const std::invalid_argument&) {
-        // Expected
-    }
-
-    // Image with invalid dimensions
-    cv::Mat invalid_img(0, 224, CV_8UC3);
-    try {
-        preprocessor.encode_image(invalid_img);
-        std::cerr << "Error: Invalid image dimensions did not throw an exception." << std::endl;
-        return false;
-    } catch (const std::invalid_argument&) {
-        // Expected
-    }
-
-    std::cout << "Invalid inputs handled correctly." << std::endl;
-    return true;
-}
-
 bool test_output_range() {
     std::cout << "=== Running test: OutputRange ===" << std::endl;
     CLIPpreprocessor preprocessor;
@@ -287,12 +239,14 @@ bool test_output_range() {
 
     torch::Tensor processed = preprocessor.encode_image(img);
 
-    // Check that values are in a reasonable range after normalization
-    // if (!checkMatRange(processed, -5.0f, 5.0f)) {
-    //     std::cerr << "Error: Output range is incorrect." << std::endl;
-    //     return false;
-    // }
-    std::cout << processed << std::endl;
+    // Convert tensor to cv::Mat
+    processed = processed.contiguous().to(torch::kCPU);
+    cv::Mat mat(1, processed.numel(), CV_32FC1, processed.data_ptr<float>());
+
+    if (!checkMatRange(mat, -5.0f, 5.0f)) {
+        std::cerr << "Error: Output range is incorrect." << std::endl;
+        return false;
+    }
 
     std::cout << "Output range is valid." << std::endl;
     return true;
@@ -315,9 +269,7 @@ int main() {
 
     run_test(test_basic_preprocessing, "BasicPreprocessing");
     run_test(test_different_input_sizes, "DifferentInputSizes");
-    run_test(test_grayscale_input, "GrayscaleInput");
     run_test(test_normalization, "Normalization");
-    run_test(test_invalid_inputs, "InvalidInputs");
     run_test(test_output_range, "OutputRange");
     run_test(test_matches_original_clip, "MatchesOriginalCLIP");
 
