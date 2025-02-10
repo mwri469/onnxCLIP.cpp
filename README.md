@@ -22,7 +22,7 @@ $ cd vision
 $ mkdir build
 ```
 
-Edit ./vision/CMakeLists.txt to add CMAKE_PREFIX_PATH and turn off all options:
+Edit ./vision/CMakeLists.txt to add CMAKE_PREFIX_PATH and turn off all options before building:
 
 ```cmake
 cmake_minimum_required(VERSION 3.18)
@@ -30,7 +30,7 @@ project(torchvision)
 set(CMAKE_CXX_STANDARD 17)
 file(STRINGS version.txt TORCHVISION_VERSION)
 
-set(CMAKE_PREFIX_PATH /path/to/clip_onnx_cpp_inference/libtorch)
+set(CMAKE_PREFIX_PATH /path/to/onnxCLIP.cpp/libtorch)
 
 option(WITH_CUDA "Enable CUDA support" OFF)
 option(WITH_MPS "Enable MPS support" OFF)
@@ -48,7 +48,7 @@ option(WITH_AVIF "Enable features requiring LibAVIF." OFF)
 
 If you have libtorch/vision installed locally, ./clip_onnx_cpp_inference/CMakeLists.txt can be modified to instead use your local installation.
 
-Further, for ./clip_onnx_cpp_inference/tests, an install of Google Test is required.
+I had a corrupted install of OpenCV and had to build locally, but a usual install of OpenCV > 4.0 works just fine.
 
 ## ToDo
 
