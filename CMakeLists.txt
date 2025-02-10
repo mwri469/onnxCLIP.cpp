@@ -1,11 +1,10 @@
 cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
-
 set(project_name clip_cpp)
 project(${project_name})
 
-###############################################################################
-#### INCLUDES #################################################################
-###############################################################################
+# Set the ABI flag globally (ensure consistency)
+string(REPLACE "-D_GLIBCXX_USE_CXX11_ABI=0" "" TORCH_CXX_FLAGS "${TORCH_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 
 # Set paths
 set(LIBTORCH_DIR "${CMAKE_SOURCE_DIR}/libtorch")
@@ -17,16 +16,7 @@ find_package(OpenCV REQUIRED)
 
 include_directories(src/inference)
 
-###############################################################################
-#### DEPENDENCIES #############################################################
-###############################################################################
-
-# None
-
-###############################################################################
-#### SOURCES ##################################################################
-###############################################################################
-
+# Library
 add_library(${project_name}-lib
         src/inference/tokenizer.cpp
         src/inference/tokenizer.hpp
@@ -63,3 +53,4 @@ target_link_libraries(preprocessor_test
                 ${project_name}-lib
                 pthread)                
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
