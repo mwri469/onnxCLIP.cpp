@@ -51,14 +51,13 @@ If you have libtorch/vision installed locally, ./clip_onnx_cpp_inference/CMakeLi
 I had a corrupted install of OpenCV and had to build locally, but a usual install of OpenCV > 4.0 works just fine.
 
 ## ToDo
-
-- [x] **Fix dev branch build errors for preprocesing:**
-- [x] Resolve dependency import error in preprocessor.cpp
-- [x] Test CLIPpreprocessor class
+- [ ] Resolve expected image embedding vs actual delta
 - [ ] Add models.cpp to CMake file
 - [ ] Build models testing script
 - [ ] Test model class
 - [ ] Develop basic example application for implementation
 - [ ] Fix non-existent byte pairs in bpe_ranks in tokenizer
 - [ ] Fix tokens to words not linking together well: "  multiple    spaces   between   words  " becomes "mu l ti pl e s p aces betwee n words "
+- [x] Resolve dependency import error in preprocessor.cpp
+- [x] Test CLIPpreprocessor class
 - [x] bpe() running infinite loop through (t,o) -> (h,o) -> (o,t)
